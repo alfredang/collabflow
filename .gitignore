@@ -1,0 +1,21 @@
+# Firebase config (contains API keys)
+js/firebase-config.js
+
+# Environment files
+.env
+.env.*
+.env.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Test screenshots
+*.png
+!screenshot.png
