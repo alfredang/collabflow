@@ -338,6 +338,32 @@
     <!-- Toast container -->
     <div id="toast-container"></div>
 
+    <!-- Import map for cache busting (scoped to js/ directory) -->
+    <script type="importmap">
+    {
+        "scopes": {
+            "./js/": {
+                "./state.js": "./js/state.js?v=2",
+                "./utils.js": "./js/utils.js?v=2",
+                "./canvas.js": "./js/canvas.js?v=2",
+                "./elements.js": "./js/elements.js?v=2",
+                "./drag.js": "./js/drag.js?v=2",
+                "./connectors.js": "./js/connectors.js?v=2",
+                "./selection.js": "./js/selection.js?v=2",
+                "./editor.js": "./js/editor.js?v=2",
+                "./history.js": "./js/history.js?v=2",
+                "./shortcuts.js": "./js/shortcuts.js?v=2",
+                "./theme.js": "./js/theme.js?v=2",
+                "./ui.js": "./js/ui.js?v=2",
+                "./minimap.js": "./js/minimap.js?v=2",
+                "./collaboration.js": "./js/collaboration.js?v=2",
+                "./export.js": "./js/export.js?v=2",
+                "./firebase-config.js": "./js/firebase-config.js?v=2"
+            }
+        }
+    }
+    </script>
+
     <!-- App script (ES module) -->
     <script type="module" src="js/app.js?v=2"></script>
 </body>
