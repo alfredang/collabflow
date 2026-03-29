@@ -47,6 +47,27 @@ const DEFAULT_DIMENSIONS = {
     text_label: { width: 120, height: 40 }
 };
 
+// Wrap text into lines that fit within maxWidth
+function wrapText(text, fontSize, maxWidth) {
+    const avgCharWidth = fontSize * 0.6;
+    const maxChars = Math.max(1, Math.floor(maxWidth / avgCharWidth));
+    const words = text.split(' ');
+    const lines = [];
+    let current = '';
+
+    for (const word of words) {
+        const test = current ? current + ' ' + word : word;
+        if (test.length > maxChars && current) {
+            lines.push(current);
+            current = word;
+        } else {
+            current = test;
+        }
+    }
+    if (current) lines.push(current);
+    return lines.length ? lines : [''];
+}
+
 // Create a new element data object
 export function createElement(type, x, y) {
     const dims = DEFAULT_DIMENSIONS[type];
@@ -212,36 +233,56 @@ function renderTextLabel(group, el) {
 }
 
 function renderText(group, el) {
-    const text = createSvgElement('text', {
-        x: el.x + el.width / 2,
-        y: el.y + el.height / 2,
-        'text-anchor': 'middle',
-        'dominant-baseline': 'central',
-        fill: el.style.textColor,
-        'font-size': el.style.fontSize,
-        'font-family': 'Inter, system-ui, sans-serif',
-        class: 'shape-text',
-        'pointer-events': 'none'
-    });
-    text.textContent = el.text;
-    group.appendChild(text);
+    const padding = 10;
+    const maxWidth = el.width - padding * 2;
+    const lineHeight = el.style.fontSize * 1.3;
+
+    const lines = wrapText(el.text, el.style.fontSize, maxWidth);
+    const totalHeight = lines.length * lineHeight;
+    const startY = el.y + el.height / 2 - totalHeight / 2 + lineHeight / 2;
+
+    for (let i = 0; i < lines.length; i++) {
+        const tspan = createSvgElement('text', {
+            x: el.x + el.width / 2,
+            y: startY + i * lineHeight,
+            'text-anchor': 'middle',
+            'dominant-baseline': 'central',
+            fill: el.style.textColor,
+            'font-size': el.style.fontSize,
+            'font-family': 'Inter, system-ui, sans-serif',
+            class: 'shape-text',
+            'pointer-events': 'none'
+        });
+        tspan.textContent = lines[i];
+        group.appendChild(tspan);
+    }
 }
 
 function renderLabelText(group, el) {
-    const text = createSvgElement('text', {
-        x: el.x + el.width / 2,
-        y: el.y + el.height / 2,
-        'text-anchor': 'middle',
-        'dominant-baseline': 'central',
-        fill: el.style.textColor,
-        'font-size': el.style.fontSize,
-        'font-family': 'Inter, system-ui, sans-serif',
-        'font-weight': '500',
-        class: 'shape-text',
-        'pointer-events': 'none'
-    });
-    text.textContent = el.text;
-    group.appendChild(text);
+    const padding = 6;
+    const maxWidth = el.width - padding * 2;
+    const lineHeight = el.style.fontSize * 1.3;
+
+    const lines = wrapText(el.text, el.style.fontSize, maxWidth);
+    const totalHeight = lines.length * lineHeight;
+    const startY = el.y + el.height / 2 - totalHeight / 2 + lineHeight / 2;
+
+    for (let i = 0; i < lines.length; i++) {
+        const tspan = createSvgElement('text', {
+            x: el.x + el.width / 2,
+            y: startY + i * lineHeight,
+            'text-anchor': 'middle',
+            'dominant-baseline': 'central',
+            fill: el.style.textColor,
+            'font-size': el.style.fontSize,
+            'font-family': 'Inter, system-ui, sans-serif',
+            'font-weight': '500',
+            class: 'shape-text',
+            'pointer-events': 'none'
+        });
+        tspan.textContent = lines[i];
+        group.appendChild(tspan);
+    }
 }
 
 function renderPorts(group, el) {

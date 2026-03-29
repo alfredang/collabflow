@@ -3,11 +3,11 @@
 import AppState, { emitStateChange } from './state.js';
 import { snap } from './utils.js';
 import { screenToCanvas } from './canvas.js';
-import { updateElementPosition, getElementAtPosition, getPortAtPosition, renderElement } from './elements.js';
+import { updateElementPosition, getElementAtPosition, getPortAtPosition, renderElement, resizeElement } from './elements.js';
 import { updateConnectionsForElement, renderTempConnection, hideTempConnection, createConnection, addConnection } from './connectors.js';
 import { selectElement, clearSelection, toggleSelection, startRubberBand, updateRubberBand, endRubberBand } from './selection.js';
 import { pushHistory } from './history.js';
-import { getPortPositions } from './utils.js';
+import { getPortPositions, snap } from './utils.js';
 
 const DRAG_THRESHOLD = 3;
 
@@ -15,6 +15,9 @@ let pointerDownPos = null;
 let isDragging = false;
 let isConnecting = false;
 let isRubberBanding = false;
+let isResizing = false;
+let resizeHandle = null;
+let resizeStartEl = null;
 let connectingFromPort = null;
 
 export function initDrag() {
@@ -41,6 +44,23 @@ function onPointerDown(e) {
         AppState.mode = 'connecting';
         e.stopPropagation();
         return;
+    }
+
+    // Check if clicking on a resize handle
+    const handleEl = e.target.closest('.selection-handle');
+    if (handleEl) {
+        const handlePos = handleEl.getAttribute('data-handle');
+        const selectedId = [...AppState.selection][0];
+        const el = AppState.elements.get(selectedId);
+        if (el) {
+            isResizing = true;
+            resizeHandle = handlePos;
+            resizeStartEl = { x: el.x, y: el.y, width: el.width, height: el.height };
+            AppState.mode = 'resizing';
+            pushHistory('resize');
+            e.stopPropagation();
+            return;
+        }
     }
 
     // Check if clicking on connector tool or port
@@ -113,6 +133,52 @@ function onPointerMove(e) {
     // Update cursor position for collaboration
     emitStateChange('cursor:moved', { x: canvasPos.x, y: canvasPos.y });
 
+    if (AppState.mode === 'resizing' && isResizing) {
+        const selectedId = [...AppState.selection][0];
+        const el = AppState.elements.get(selectedId);
+        if (!el) return;
+
+        const s = resizeStartEl;
+        let newX = s.x, newY = s.y, newW = s.width, newH = s.height;
+
+        const dx = canvasPos.x - pointerDownPos.canvasX;
+        const dy = canvasPos.y - pointerDownPos.canvasY;
+
+        if (resizeHandle === 'se') {
+            newW = s.width + dx;
+            newH = s.height + dy;
+        } else if (resizeHandle === 'sw') {
+            newX = s.x + dx;
+            newW = s.width - dx;
+            newH = s.height + dy;
+        } else if (resizeHandle === 'ne') {
+            newW = s.width + dx;
+            newY = s.y + dy;
+            newH = s.height - dy;
+        } else if (resizeHandle === 'nw') {
+            newX = s.x + dx;
+            newY = s.y + dy;
+            newW = s.width - dx;
+            newH = s.height - dy;
+        }
+
+        newW = Math.max(60, newW);
+        newH = Math.max(40, newH);
+
+        if (AppState.snapToGrid) {
+            newX = snap(newX);
+            newY = snap(newY);
+            newW = snap(newW);
+            newH = snap(newH);
+        }
+
+        el.x = newX;
+        el.y = newY;
+        resizeElement(selectedId, newW, newH);
+        updateConnectionsForElement(selectedId);
+        return;
+    }
+
     if (AppState.mode === 'connecting' && isConnecting) {
         // Draw temp connection line
         const fromPos = connectingFromPort;
@@ -161,6 +227,20 @@ function onPointerMove(e) {
 
 function onPointerUp(e) {
     const canvasPos = screenToCanvas(e.clientX, e.clientY);
+
+    if (AppState.mode === 'resizing' && isResizing) {
+        const selectedId = [...AppState.selection][0];
+        const el = AppState.elements.get(selectedId);
+        if (el) {
+            emitStateChange('element:resized', { id: selectedId, width: el.width, height: el.height });
+        }
+        isResizing = false;
+        resizeHandle = null;
+        resizeStartEl = null;
+        AppState.mode = 'idle';
+        pointerDownPos = null;
+        return;
+    }
 
     if (AppState.mode === 'connecting' && isConnecting) {
         hideTempConnection();
