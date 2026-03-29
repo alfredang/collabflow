@@ -33,6 +33,9 @@ function onPointerDown(e) {
     if (AppState.mode === 'panning') return;
     if (AppState.mode === 'editing') return;
 
+    // Let placement click handler handle shape tools
+    if (AppState.activeTool !== 'select' && AppState.activeTool !== 'connector') return;
+
     const canvasPos = screenToCanvas(e.clientX, e.clientY);
     pointerDownPos = { screenX: e.clientX, screenY: e.clientY, canvasX: canvasPos.x, canvasY: canvasPos.y };
 
