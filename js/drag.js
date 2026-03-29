@@ -1,13 +1,12 @@
 // CollabFlow - Drag and drop interaction
 
 import AppState, { emitStateChange } from './state.js';
-import { snap } from './utils.js';
+import { snap, getPortPositions } from './utils.js';
 import { screenToCanvas } from './canvas.js';
 import { updateElementPosition, getElementAtPosition, getPortAtPosition, renderElement, resizeElement } from './elements.js';
 import { updateConnectionsForElement, renderTempConnection, hideTempConnection, createConnection, addConnection } from './connectors.js';
 import { selectElement, clearSelection, toggleSelection, startRubberBand, updateRubberBand, endRubberBand } from './selection.js';
 import { pushHistory } from './history.js';
-import { getPortPositions, snap } from './utils.js';
 
 const DRAG_THRESHOLD = 3;
 
