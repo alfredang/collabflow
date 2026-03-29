@@ -17,8 +17,7 @@
 
 ## Screenshot
 
-<!-- Screenshot will be added once the app is deployed -->
-<!-- ![Screenshot](screenshot.png) -->
+![Screenshot](docs/screenshot.png)
 
 ## About
 
